@@ -1,0 +1,158 @@
+
+In [13]:
+
+import pandas as pd              
+import numpy as np              
+import matplotlib.pyplot as plt  
+import tensorflow as tf
+
+In [25]:
+
+dataframe = pd.read_csv("data4.csv") 
+dataframe = dataframe[0:10]
+dataframe
+
+Out[25]:
+	area 	bathrooms
+0 	2104 	3
+1 	1600 	3
+2 	2400 	3
+3 	1416 	2
+4 	3000 	4
+5 	1985 	4
+6 	1534 	3
+7 	1427 	3
+8 	1380 	3
+9 	1494 	3
+In [27]:
+
+dataframe.loc[:, ("y1")] = [1, 1, 1, 0, 0, 1, 0, 1, 1, 1]
+dataframe.loc[:, ("y2")] = dataframe["y1"] == 0 
+dataframe.loc[:, ("y2")] = dataframe["y2"].astype(int) 
+dataframe
+
+Out[27]:
+	area 	bathrooms 	y1 	y2
+0 	2104 	3 	1 	0
+1 	1600 	3 	1 	0
+2 	2400 	3 	1 	0
+3 	1416 	2 	0 	1
+4 	3000 	4 	0 	1
+5 	1985 	4 	1 	0
+6 	1534 	3 	0 	1
+7 	1427 	3 	1 	0
+8 	1380 	3 	1 	0
+9 	1494 	3 	1 	0
+In [33]:
+
+inputX = dataframe.loc[:, ['area', 'bathrooms']].as_matrix()
+inputY = dataframe.loc[:, ["y1", "y2"]].as_matrix()
+
+In [37]:
+
+learning_rate = 0.000001
+training_epochs = 2000
+display_step = 50
+n_samples = inputY.size
+
+In [45]:
+
+x = tf.placeholder(tf.float32, [None, 2])
+W = tf.Variable(tf.zeros([2, 2]))
+b = tf.Variable(tf.zeros([2]))
+y_values = tf.add(tf.matmul(x, W), b)
+y = tf.nn.softmax(y_values)
+y_ = tf.placeholder(tf.float32, [None,2])
+
+In [47]:
+
+cost = tf.reduce_sum(tf.pow(y_ - y, 2))/(2*n_samples)
+optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(cost)#to minimize cost function
+
+In [49]:
+
+init = tf.global_variables_initializer()
+sess = tf.Session()
+sess.run(init)
+
+In [51]:
+
+for i in range(training_epochs):  
+    sess.run(optimizer, feed_dict={x: inputX, y_: inputY})
+    if (i) % display_step == 0:
+        cc = sess.run(cost, feed_dict={x: inputX, y_:inputY})
+        print ("Training step:", '%04d' % (i), "cost=", "{:.9f}".format(cc))
+print ("Optimization Finished!")
+training_cost = sess.run(cost, feed_dict={x: inputX, y_: inputY})
+print ("Training cost=", training_cost, "W=", sess.run(W), "b=", sess.run(b), '\n')
+
+Training step: 0000 cost= 0.114958666
+Training step: 0050 cost= 0.109539941
+Training step: 0100 cost= 0.109539866
+Training step: 0150 cost= 0.109539807
+Training step: 0200 cost= 0.109539732
+Training step: 0250 cost= 0.109539673
+Training step: 0300 cost= 0.109539606
+Training step: 0350 cost= 0.109539531
+Training step: 0400 cost= 0.109539464
+Training step: 0450 cost= 0.109539405
+Training step: 0500 cost= 0.109539315
+Training step: 0550 cost= 0.109539248
+Training step: 0600 cost= 0.109539196
+Training step: 0650 cost= 0.109539129
+Training step: 0700 cost= 0.109539054
+Training step: 0750 cost= 0.109538987
+Training step: 0800 cost= 0.109538913
+Training step: 0850 cost= 0.109538853
+Training step: 0900 cost= 0.109538779
+Training step: 0950 cost= 0.109538712
+Training step: 1000 cost= 0.109538652
+Training step: 1050 cost= 0.109538577
+Training step: 1100 cost= 0.109538510
+Training step: 1150 cost= 0.109538436
+Training step: 1200 cost= 0.109538361
+Training step: 1250 cost= 0.109538302
+Training step: 1300 cost= 0.109538235
+Training step: 1350 cost= 0.109538175
+Training step: 1400 cost= 0.109538101
+Training step: 1450 cost= 0.109538034
+Training step: 1500 cost= 0.109537959
+Training step: 1550 cost= 0.109537885
+Training step: 1600 cost= 0.109537825
+Training step: 1650 cost= 0.109537765
+Training step: 1700 cost= 0.109537683
+Training step: 1750 cost= 0.109537624
+Training step: 1800 cost= 0.109537557
+Training step: 1850 cost= 0.109537482
+Training step: 1900 cost= 0.109537408
+Training step: 1950 cost= 0.109537348
+Optimization Finished!
+Training cost= 0.109537 W= [[  2.14149564e-04  -2.14149914e-04]
+ [  5.12748193e-05  -5.12747974e-05]] b= [  1.19155184e-05  -1.19155284e-05] 
+
+In [52]:
+
+sess.run(y, feed_dict={x: inputX })
+
+Out[52]:
+
+array([[ 0.71125221,  0.28874779],
+       [ 0.66498977,  0.33501023],
+       [ 0.73657656,  0.26342347],
+       [ 0.64718789,  0.35281211],
+       [ 0.78335613,  0.2166439 ],
+       [ 0.70069474,  0.29930523],
+       [ 0.65866327,  0.34133676],
+       [ 0.64828628,  0.35171372],
+       [ 0.64368278,  0.35631716],
+       [ 0.65480113,  0.3451989 ]], dtype=float32)
+
+In [53]:
+
+sess.run(tf.nn.softmax([1., 2.]))
+
+Out[53]:
+
+array([ 0.26894143,  0.7310586 ], dtype=float32)
+
+
